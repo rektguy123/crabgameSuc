@@ -30,8 +30,8 @@
     #crab:active {
       transform: scale(0.95);
     }
-    #upgrade {
-      margin-top: 20px;
+    .upgrade {
+      margin-top: 10px;
       padding: 10px 20px;
       font-size: 16px;
       background: #ff6f91;
@@ -40,7 +40,7 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    #upgrade:disabled {
+    .upgrade:disabled {
       background: #ccc;
       cursor: not-allowed;
     }
@@ -50,25 +50,34 @@
   <h1>Crab Clicker</h1>
   <div id="score">Clicks: 0</div>
   <img src="crab.png" id="crab" alt="Crab" />
-  <button id="upgrade" disabled>Buy Auto Click (Cost: 50)</button>
+  <audio id="clickSound" src="click.mp3" preload="auto"></audio>
+
+  <button id="upgrade1" class="upgrade" disabled>Buy Auto Click Lv1 (+1/sec) - Cost: 50</button>
+  <button id="upgrade2" class="upgrade" disabled>Buy Auto Click Lv2 (+2/sec) - Cost: 150</button>
 
   <script>
     let score = 0;
-    let autoClick = false;
+    let autoClick1 = false;
+    let autoClick2 = false;
+
     const scoreDisplay = document.getElementById("score");
     const crab = document.getElementById("crab");
-    const upgradeBtn = document.getElementById("upgrade");
+    const clickSound = document.getElementById("clickSound");
+    const upgradeBtn1 = document.getElementById("upgrade1");
+    const upgradeBtn2 = document.getElementById("upgrade2");
 
     crab.addEventListener("click", () => {
       score++;
+      clickSound.currentTime = 0;
+      clickSound.play();
       updateDisplay();
     });
 
-    upgradeBtn.addEventListener("click", () => {
-      if (score >= 50 && !autoClick) {
+    upgradeBtn1.addEventListener("click", () => {
+      if (score >= 50 && !autoClick1) {
         score -= 50;
-        autoClick = true;
-        upgradeBtn.disabled = true;
+        autoClick1 = true;
+        upgradeBtn1.disabled = true;
         setInterval(() => {
           score++;
           updateDisplay();
@@ -77,10 +86,26 @@
       }
     });
 
+    upgradeBtn2.addEventListener("click", () => {
+      if (score >= 150 && !autoClick2) {
+        score -= 150;
+        autoClick2 = true;
+        upgradeBtn2.disabled = true;
+        setInterval(() => {
+          score += 2;
+          updateDisplay();
+        }, 1000);
+        updateDisplay();
+      }
+    });
+
     function updateDisplay() {
       scoreDisplay.textContent = `Clicks: ${score}`;
-      if (score >= 50 && !autoClick) {
-        upgradeBtn.disabled = false;
+      if (score >= 50 && !autoClick1) {
+        upgradeBtn1.disabled = false;
+      }
+      if (score >= 150 && !autoClick2) {
+        upgradeBtn2.disabled = false;
       }
     }
   </script>

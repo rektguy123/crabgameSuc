@@ -100,27 +100,28 @@
     });
 
     autoClick1Btn.addEventListener("click", () => {
-      if (score >= 50) {
-        score -= 50;
-        autoClick1Btn.disabled = true;
-        let remaining = 5;
-        timer1.textContent = `Auto Click Lv1: ${remaining}s remaining`;
-        const interval = setInterval(() => {
-          score++;
-          updateDisplay();
-        }, 1000);
-        const countdown = setInterval(() => {
-          remaining--;
-          timer1.textContent = `Auto Click Lv1: ${remaining}s remaining`;
-        }, 1000);
-        setTimeout(() => {
-          clearInterval(interval);
-          clearInterval(countdown);
-          timer1.textContent = "";
-          autoClick1Btn.disabled = false;
-        }, 5000);
-      }
-    });
+  if (score >= 50) {
+    score -= 50;
+    autoClick1Btn.disabled = true;
+    let remaining = 10;
+    timer1.textContent = `Auto Click Lv1: ${remaining}s remaining`;
+    const interval = setInterval(() => {
+      score += 8;
+      updateDisplay();
+    }, 1000);
+    const countdown = setInterval(() => {
+      remaining--;
+      timer1.textContent = `Auto Click Lv1: ${remaining}s remaining`;
+    }, 1000);
+    setTimeout(() => {
+      clearInterval(interval);
+      clearInterval(countdown);
+      timer1.textContent = "";
+      autoClick1Btn.disabled = false;
+    }, 10000);
+    updateDisplay();
+  }
+});
 
     labCrabBtn.addEventListener("click", () => {
       if (score >= 250 && !labCrabUnlocked) {

@@ -44,6 +44,11 @@
       background: #ccc;
       cursor: not-allowed;
     }
+    .timer {
+      font-size: 14px;
+      color: #555;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -52,19 +57,40 @@
   <img src="crab.png" id="crab" alt="Crab" />
   <audio id="clickSound" src="click.mp3" preload="auto"></audio>
 
-  <button id="upgrade1" class="upgrade" disabled>Buy Auto Click Lv1 (+1/sec) - Cost: 50</button>
-  <button id="upgrade2" class="upgrade" disabled>Buy Auto Click Lv2 (+2/sec) - Cost: 150</button>
+  <button id="autoClick1" class="upgrade" disabled>Auto Click Lv1 (5s) - Cost: 50</button>
+  <div id="timer1" class="timer"></div>
+
+  <button id="labCrab" class="upgrade" disabled>Unlock Lab Crab - Cost: 250</button>
+
+  <button id="autoClick2" class="upgrade" style="display:none;">Auto Click Lv2 (20s)</button>
+  <div id="timer2" class="timer"></div>
+
+  <button id="nuke" class="upgrade" style="display:none;">Activate Nuke Mode (+5/sec for 5s)</button>
+  <div id="timerNuke" class="timer"></div>
 
   <script>
-    let score = 0;
-    let autoClick1 = false;
-    let autoClick2 = false;
-
+    let score = parseInt(localStorage.getItem("score")) || 0;
+    let labCrabUnlocked = localStorage.getItem("labCrabUnlocked") === "true";
     const scoreDisplay = document.getElementById("score");
     const crab = document.getElementById("crab");
     const clickSound = document.getElementById("clickSound");
-    const upgradeBtn1 = document.getElementById("upgrade1");
-    const upgradeBtn2 = document.getElementById("upgrade2");
+
+    const autoClick1Btn = document.getElementById("autoClick1");
+    const labCrabBtn = document.getElementById("labCrab");
+    const autoClick2Btn = document.getElementById("autoClick2");
+    const nukeBtn = document.getElementById("nuke");
+
+    const timer1 = document.getElementById("timer1");
+    const timer2 = document.getElementById("timer2");
+    const timerNuke = document.getElementById("timerNuke");
+
+    // Apply saved lab crab image
+    if (labCrabUnlocked) {
+      crab.src = "labcrab.png";
+      autoClick2Btn.style.display = "inline-block";
+      nukeBtn.style.display = "inline-block";
+      labCrabBtn.disabled = true;
+    }
 
     crab.addEventListener("click", () => {
       score++;
@@ -73,41 +99,90 @@
       updateDisplay();
     });
 
-    upgradeBtn1.addEventListener("click", () => {
-      if (score >= 50 && !autoClick1) {
+    autoClick1Btn.addEventListener("click", () => {
+      if (score >= 50) {
         score -= 50;
-        autoClick1 = true;
-        upgradeBtn1.disabled = true;
-        setInterval(() => {
+        autoClick1Btn.disabled = true;
+        let remaining = 5;
+        timer1.textContent = `Auto Click Lv1: ${remaining}s remaining`;
+        const interval = setInterval(() => {
           score++;
           updateDisplay();
         }, 1000);
+        const countdown = setInterval(() => {
+          remaining--;
+          timer1.textContent = `Auto Click Lv1: ${remaining}s remaining`;
+        }, 1000);
+        setTimeout(() => {
+          clearInterval(interval);
+          clearInterval(countdown);
+          timer1.textContent = "";
+          autoClick1Btn.disabled = false;
+        }, 5000);
+      }
+    });
+
+    labCrabBtn.addEventListener("click", () => {
+      if (score >= 250 && !labCrabUnlocked) {
+        score -= 250;
+        labCrabUnlocked = true;
+        localStorage.setItem("labCrabUnlocked", "true");
+        labCrabBtn.disabled = true;
+        crab.src = "labcrab.png";
+        autoClick2Btn.style.display = "inline-block";
+        nukeBtn.style.display = "inline-block";
         updateDisplay();
       }
     });
 
-    upgradeBtn2.addEventListener("click", () => {
-      if (score >= 150 && !autoClick2) {
-        score -= 150;
-        autoClick2 = true;
-        upgradeBtn2.disabled = true;
-        setInterval(() => {
-          score += 2;
-          updateDisplay();
-        }, 1000);
+    autoClick2Btn.addEventListener("click", () => {
+      autoClick2Btn.disabled = true;
+      let remaining = 20;
+      timer2.textContent = `Auto Click Lv2: ${remaining}s remaining`;
+      const interval = setInterval(() => {
+        score++;
         updateDisplay();
-      }
+      }, 1000);
+      const countdown = setInterval(() => {
+        remaining--;
+        timer2.textContent = `Auto Click Lv2: ${remaining}s remaining`;
+      }, 1000);
+      setTimeout(() => {
+        clearInterval(interval);
+        clearInterval(countdown);
+        timer2.textContent = "";
+        autoClick2Btn.disabled = false;
+      }, 20000);
+    });
+
+    nukeBtn.addEventListener("click", () => {
+      nukeBtn.disabled = true;
+      let remaining = 5;
+      timerNuke.textContent = `Nuke Mode: ${remaining}s remaining`;
+      const interval = setInterval(() => {
+        score += 5;
+        updateDisplay();
+      }, 1000);
+      const countdown = setInterval(() => {
+        remaining--;
+        timerNuke.textContent = `Nuke Mode: ${remaining}s remaining`;
+      }, 1000);
+      setTimeout(() => {
+        clearInterval(interval);
+        clearInterval(countdown);
+        timerNuke.textContent = "";
+        nukeBtn.disabled = false;
+      }, 5000);
     });
 
     function updateDisplay() {
       scoreDisplay.textContent = `Clicks: ${score}`;
-      if (score >= 50 && !autoClick1) {
-        upgradeBtn1.disabled = false;
-      }
-      if (score >= 150 && !autoClick2) {
-        upgradeBtn2.disabled = false;
-      }
+      localStorage.setItem("score", score);
+      if (score >= 50) autoClick1Btn.disabled = false;
+      if (score >= 250 && !labCrabUnlocked) labCrabBtn.disabled = false;
     }
+
+    updateDisplay();
   </script>
 </body>
 </html>

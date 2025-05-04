@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Crab Clicker</title>
   <style>
     body {
@@ -31,7 +31,7 @@
       transform: scale(0.95);
     }
     .upgrade {
-      margin-top: 10px;
+      margin: 5px;
       padding: 10px 20px;
       font-size: 16px;
       background: #ff6f91;
@@ -44,10 +44,22 @@
       background: #ccc;
       cursor: not-allowed;
     }
-    .timer {
-      font-size: 14px;
-      color: #555;
-      margin-top: 5px;
+    #timers {
+      margin-top: 10px;
+    }
+    #nukeProgressContainer {
+      width: 200px;
+      height: 20px;
+      background: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+      display: none;
+    }
+    #nukeProgressBar {
+      height: 100%;
+      width: 0%;
+      background: #ff5e5e;
     }
   </style>
 </head>
@@ -55,83 +67,78 @@
   <h1>Crab Clicker</h1>
   <div id="score">Clicks: 0</div>
   <img src="crab.png" id="crab" alt="Crab" />
-  <audio id="clickSound" src="click.mp3" preload="auto"></audio>
+  <button id="autoClick1" class="upgrade" disabled>Auto Click Lv1 (10s, +8/s) – 50</button>
+  <button id="labCrab" class="upgrade" disabled>Unlock Lab Crab – 250</button>
+  <button id="autoClick2" class="upgrade" style="display:none;">Auto Click Lv2 (20s, +16/s)</button>
+  <button id="nuke" class="upgrade" style="display:none;">Activate Nuke Mode (+100/s for 2s)</button>
+  <div id="nukeProgressContainer">
+    <div id="nukeProgressBar"></div>
+  </div>
+  <div id="timers">
+    <div id="timer1"></div>
+    <div id="timer2"></div>
+    <div id="timerNuke"></div>
+  </div>
 
-  <button id="autoClick1" class="upgrade" disabled>Auto Click Lv1 (5s) - Cost: 50</button>
-  <div id="timer1" class="timer"></div>
-
-  <button id="labCrab" class="upgrade" disabled>Unlock Lab Crab - Cost: 250</button>
-
-  <button id="autoClick2" class="upgrade" style="display:none;">Auto Click Lv2 (20s)</button>
-  <div id="timer2" class="timer"></div>
-
-  <button id="nuke" class="upgrade" style="display:none;">Activate Nuke Mode (+5/sec for 5s)</button>
-  <div id="timerNuke" class="timer"></div>
+  <audio id="nukeSound" src="nuke.mp3"></audio>
+  <audio id="labUnlockSound" src="labunlock.mp3"></audio>
 
   <script>
     let score = parseInt(localStorage.getItem("score")) || 0;
+    let autoClick1Used = false;
     let labCrabUnlocked = localStorage.getItem("labCrabUnlocked") === "true";
+    let nukeUsed = false;
+
     const scoreDisplay = document.getElementById("score");
     const crab = document.getElementById("crab");
-    const clickSound = document.getElementById("clickSound");
-
     const autoClick1Btn = document.getElementById("autoClick1");
-    const labCrabBtn = document.getElementById("labCrab");
     const autoClick2Btn = document.getElementById("autoClick2");
+    const labCrabBtn = document.getElementById("labCrab");
     const nukeBtn = document.getElementById("nuke");
-
     const timer1 = document.getElementById("timer1");
     const timer2 = document.getElementById("timer2");
     const timerNuke = document.getElementById("timerNuke");
-
-    // Apply saved lab crab image
-    if (labCrabUnlocked) {
-      crab.src = "labcrab.png";
-      autoClick2Btn.style.display = "inline-block";
-      nukeBtn.style.display = "inline-block";
-      labCrabBtn.disabled = true;
-    }
+    const nukeSound = document.getElementById("nukeSound");
+    const labUnlockSound = document.getElementById("labUnlockSound");
+    const nukeProgressContainer = document.getElementById("nukeProgressContainer");
+    const nukeProgressBar = document.getElementById("nukeProgressBar");
 
     crab.addEventListener("click", () => {
       score++;
-      clickSound.currentTime = 0;
-      clickSound.play();
       updateDisplay();
     });
 
     autoClick1Btn.addEventListener("click", () => {
-  if (score >= 50) {
-    score -= 50;
-    autoClick1Btn.disabled = true;
-    let remaining = 10;
-    timer1.textContent = `Auto Click Lv1: ${remaining}s remaining`;
-    const interval = setInterval(() => {
-      score += 8;
-      updateDisplay();
-    }, 1000);
-    const countdown = setInterval(() => {
-      remaining--;
+      autoClick1Btn.disabled = true;
+      let remaining = 10;
       timer1.textContent = `Auto Click Lv1: ${remaining}s remaining`;
-    }, 1000);
-    setTimeout(() => {
-      clearInterval(interval);
-      clearInterval(countdown);
-      timer1.textContent = "";
-      autoClick1Btn.disabled = false;
-    }, 10000);
-    updateDisplay();
-  }
-});
+      const interval = setInterval(() => {
+        score += 8;
+        updateDisplay();
+      }, 1000);
+      const countdown = setInterval(() => {
+        remaining--;
+        timer1.textContent = `Auto Click Lv1: ${remaining}s remaining`;
+      }, 1000);
+      setTimeout(() => {
+        clearInterval(interval);
+        clearInterval(countdown);
+        timer1.textContent = "";
+        autoClick1Btn.disabled = false;
+      }, 10000);
+    });
 
     labCrabBtn.addEventListener("click", () => {
       if (score >= 250 && !labCrabUnlocked) {
         score -= 250;
         labCrabUnlocked = true;
+        nukeUsed = false;
         localStorage.setItem("labCrabUnlocked", "true");
         labCrabBtn.disabled = true;
         crab.src = "labcrab.png";
         autoClick2Btn.style.display = "inline-block";
         nukeBtn.style.display = "inline-block";
+        labUnlockSound.play();
         updateDisplay();
       }
     });
@@ -141,7 +148,7 @@
       let remaining = 20;
       timer2.textContent = `Auto Click Lv2: ${remaining}s remaining`;
       const interval = setInterval(() => {
-        score++;
+        score += 16;
         updateDisplay();
       }, 1000);
       const countdown = setInterval(() => {
@@ -157,11 +164,16 @@
     });
 
     nukeBtn.addEventListener("click", () => {
+      if (nukeUsed) return;
+      nukeUsed = true;
       nukeBtn.disabled = true;
-      let remaining = 5;
+      nukeBtn.style.display = "none";
+      nukeSound.play();
+      nukeProgressContainer.style.display = "block";
+      let remaining = 2;
       timerNuke.textContent = `Nuke Mode: ${remaining}s remaining`;
       const interval = setInterval(() => {
-        score += 5;
+        score += 100;
         updateDisplay();
       }, 1000);
       const countdown = setInterval(() => {
@@ -171,9 +183,8 @@
       setTimeout(() => {
         clearInterval(interval);
         clearInterval(countdown);
-        timerNuke.textContent = "";
-        nukeBtn.disabled = false;
-      }, 5000);
+        timerNuke.textContent = "Nuke used";
+      }, 2000);
     });
 
     function updateDisplay() {
@@ -181,9 +192,33 @@
       localStorage.setItem("score", score);
       if (score >= 50) autoClick1Btn.disabled = false;
       if (score >= 250 && !labCrabUnlocked) labCrabBtn.disabled = false;
+
+      // Nuke reload at 1000
+      if (labCrabUnlocked && nukeUsed && score >= 1000) {
+        nukeUsed = false;
+        nukeBtn.style.display = "inline-block";
+        nukeBtn.disabled = false;
+        nukeProgressContainer.style.display = "none";
+        timerNuke.textContent = "Nuke reloaded!";
+      } else if (labCrabUnlocked && nukeUsed) {
+        nukeProgressContainer.style.display = "block";
+        const progress = Math.min((score / 1000) * 100, 100);
+        nukeProgressBar.style.width = `${progress}%`;
+      }
+
+      if (!nukeUsed) {
+        nukeProgressContainer.style.display = "none";
+      }
     }
 
+    // On load
     updateDisplay();
+    if (labCrabUnlocked) {
+      crab.src = "labcrab.png";
+      autoClick2Btn.style.display = "inline-block";
+      nukeBtn.style.display = "inline-block";
+      labCrabBtn.disabled = true;
+    }
   </script>
 </body>
 </html>

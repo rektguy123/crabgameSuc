@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crab Clicker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(to bottom, #d0f4f7, #fff);
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #score {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    #crab {
+      width: 200px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    #crab:active {
+      transform: scale(0.95);
+    }
+    #upgrade {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #ff6f91;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #upgrade:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>Crab Clicker</h1>
+  <div id="score">Clicks: 0</div>
+  <img src="crab.png" id="crab" alt="Crab" />
+  <button id="upgrade" disabled>Buy Auto Click (Cost: 50)</button>
+
+  <script>
+    let score = 0;
+    let autoClick = false;
+    const scoreDisplay = document.getElementById("score");
+    const crab = document.getElementById("crab");
+    const upgradeBtn = document.getElementById("upgrade");
+
+    crab.addEventListener("click", () => {
+      score++;
+      updateDisplay();
+    });
+
+    upgradeBtn.addEventListener("click", () => {
+      if (score >= 50 && !autoClick) {
+        score -= 50;
+        autoClick = true;
+        upgradeBtn.disabled = true;
+        setInterval(() => {
+          score++;
+          updateDisplay();
+        }, 1000);
+        updateDisplay();
+      }
+    });
+
+    function updateDisplay() {
+      scoreDisplay.textContent = `Clicks: ${score}`;
+      if (score >= 50 && !autoClick) {
+        upgradeBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
